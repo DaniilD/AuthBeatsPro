@@ -1,0 +1,50 @@
+version: "3.5"
+services:
+  nginx:
+    image: nginx
+    build:
+      context: .
+    command: ["/usr/sbin/nginx", "-g", "daemon off;"]
+    working_dir: /go/authBeatsPro
+    restart: unless-stopped
+    networks:
+      - local-space_beats_pro_proxy
+      - auth-beats-pro-internal
+      - local-space_beats-pro-db
+    volumes:
+      - .:/go/authBeatsPro:ro
+      - ./build/etc/nginx/conf.d/:/etc/nginx/conf.d/:ro
+      - ./var/logs:/srv/var/logs/:rw
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+    depends_on:
+      - auth-beatspro
+      #ports:
+      #- "80:80"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.auth-beatspro.entrypoints=http"
+      - "traefik.http.routers.auth-beatspro.rule=Host(`auth.beatspro.space`)"
+      - "traefik.http.services.auth-beatspro.loadbalancer.server.port=8090"
+      - "traefik.docker.network=local-space_beats_pro_proxy"
+
+  auth-beatspro:
+    build:
+      context: .
+      dockerfile: ./build/docker/go/Dockerfile
+    networks:
+      - local-space_beats_pro_proxy
+      - auth-beats-pro-internal
+      - local-space_beats-pro-db
+    volumes:
+      - .:/go/authBeatsPro
+    working_dir: /go/authBeatsPro
+      #ports:
+    #- "8855:8855"
+
+networks:
+  local-space_beats-pro-db:
+    external: true
+  auth-beats-pro-internal:
+    external: false
+  local-space_beats_pro_proxy:
+    external: true
