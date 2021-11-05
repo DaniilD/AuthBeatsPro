@@ -1,0 +1,6 @@
+CREATE TABLE `Tags`
+(
+    `id`    INT UNSIGNED AUTO_INCREMENT NOT NULL,
+    `title` VARCHAR(255),
+    PRIMARY KEY (id)
+);

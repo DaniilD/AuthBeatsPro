@@ -2,8 +2,6 @@ version: "3.5"
 services:
   nginx:
     image: nginx
-    build:
-      context: .
     command: ["/usr/sbin/nginx", "-g", "daemon off;"]
     working_dir: /go/authBeatsPro
     restart: unless-stopped
@@ -17,7 +15,7 @@ services:
       - ./var/logs:/srv/var/logs/:rw
       - /var/run/docker.sock:/tmp/docker.sock:ro
     depends_on:
-      - auth-beatspro
+      - app
       #ports:
       #- "80:80"
     labels:
@@ -27,10 +25,11 @@ services:
       - "traefik.http.services.auth-beatspro.loadbalancer.server.port=8090"
       - "traefik.docker.network=local-space_beats_pro_proxy"
 
-  auth-beatspro:
+  app:
+    image: "${SERVICE_NAME}-${LOCAL_BASE_DOMAIN_SLUG}"
     build:
       context: .
-      dockerfile: ./build/docker/go/Dockerfile
+      dockerfile: Dockerfile
     networks:
       - local-space_beats_pro_proxy
       - auth-beats-pro-internal
